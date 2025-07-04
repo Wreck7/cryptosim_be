@@ -1,6 +1,6 @@
 
 from fastapi import APIRouter
-from cryptosim_be.db import db
+from ..db import db
 
 router = APIRouter()
 
