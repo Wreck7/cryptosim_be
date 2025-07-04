@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from ..db import db
+from cryptosim_be.db import db
 import requests
 
 

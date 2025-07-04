@@ -1,7 +1,7 @@
 
 from fastapi import APIRouter
 from datetime import datetime
-from ..db import db
+from cryptosim_be.db import db
 
 router = APIRouter()
 

@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException
-from ..db import db
+from cryptosim_be.db import db
 
 router = APIRouter()
 
