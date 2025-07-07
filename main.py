@@ -6,9 +6,19 @@ from routes.portfolio import router as portfolio_router
 from routes.wallet import router as wallet_router
 from routes.transactions import router as transactions_router
 from routes.wishlist import router as wishlist_router
+from fastapi.middleware.cors import CORSMiddleware
 
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # or better: ["http://localhost:8501", "https://your-frontend-domain.com"]
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 app = FastAPI(title="Crypto Dashboard API")
+
+
 
 
 app.include_router(auth_router)
