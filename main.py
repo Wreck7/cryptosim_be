@@ -9,17 +9,14 @@ from routes.wishlist import router as wishlist_router
 from fastapi.middleware.cors import CORSMiddleware
 
 
+app = FastAPI(title="Crypto Dashboard API")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # or better: ["http://localhost:8501", "https://your-frontend-domain.com"]
+    allow_origins=['http://localhost:8501'],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
-app = FastAPI(title="Crypto Dashboard API")
-
-
-
 
 app.include_router(auth_router)
 app.include_router(profile_router)
