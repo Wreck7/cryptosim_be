@@ -25,4 +25,3 @@ app.include_router(portfolio_router)
 app.include_router(wallet_router)
 app.include_router(transactions_router)
 app.include_router(wishlist_router)
-
