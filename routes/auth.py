@@ -7,7 +7,7 @@ router = APIRouter()
 
 @router.post("/register")
 def register_user(email, name, username, password, gender, age, phone):
-    print("DB URL:", db.url)
+    # print("DB URL:", db.url)
     check = db.table('users').select('*').or_(f"username.eq.{username},email.eq.{email}").execute()
     if check.data:
         return {"success": False, "message": "User already exists"}
