@@ -12,7 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI(title="Crypto Dashboard API")
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=['http://localhost:8501', ""],
+    allow_origins=['http://localhost:8501', "https://cryptosim-frontend.streamlit.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
