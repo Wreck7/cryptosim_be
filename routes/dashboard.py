@@ -1,68 +1,70 @@
-from fastapi import APIRouter
-from db import db
-import requests
+from fastapi import APIRouter, HTTPException
+from services.supabase_service import upsert_coins, get_all_coins, get_coin
 
+import logging
+import httpx
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
 COIN_TICKERS_URL = "https://api.coinpaprika.com/v1/tickers"
 
 
-def coin_image_url(coin_id):
+def _coin_image_url(coin_id: str) -> str:
     return f"https://static.coinpaprika.com/coin/{coin_id}/logo.png"
 
 
-def fetch_top_20_coin_data():
-    response = requests.get(COIN_TICKERS_URL)
-    if response.status_code != 200:
-        raise Exception("Failed to fetch data from CoinPaprika")
-    
+def _fetch_and_format_coins() -> list[dict]:
+    """Synchronous fetch used only by the manual /refresh-dashboard endpoint."""
+    from datetime import datetime, timezone
+
+    response = httpx.get(COIN_TICKERS_URL, timeout=10)
+    response.raise_for_status()
     all_coins = response.json()
-    top_20 = sorted(all_coins, key=lambda x: x["rank"])[:20]
+    top_20 = sorted(all_coins, key=lambda c: c["rank"])[:20]
+    now = datetime.now(timezone.utc).isoformat()
 
     formatted = []
     for coin in top_20:
+        usd = coin["quotes"]["USD"]
         formatted.append({
             "coin_id": coin["id"],
             "name": coin["name"],
-            "rank": coin["rank"],
-            "total_supply": coin['total_supply'],
-            "price": coin["quotes"]["USD"]["price"],
-            "volume_24h": coin["quotes"]["USD"]["volume_24h"],
-            "ath": coin["quotes"]["USD"].get("ath_price", 0),
-            "percent_from_ath": coin["quotes"]["USD"].get("percent_from_price_ath", 0),
-            "market_cap": coin["quotes"]["USD"]["market_cap"],
             "symbol": coin["symbol"],
-            "coin_image_url": coin_image_url(coin["id"])
+            "rank": coin["rank"],
+            "price": usd["price"],
+            "market_cap": usd["market_cap"],
+            "volume_24h": usd["volume_24h"],
+            "ath": usd.get("ath_price", 0),
+            "percent_from_ath": usd.get("percent_from_price_ath", 0),
+            "total_supply": coin.get("total_supply", 0),
+            "coin_image_url": _coin_image_url(coin["id"]),
+            "updated_at": now,
         })
     return formatted
-
-def update_coins_in_db():
-    coins = fetch_top_20_coin_data()
-    for coin in coins:
-        existing = db.table("coins").select("*").eq("coin_id", coin["coin_id"]).execute()
-        if existing.data:
-            db.table("coins").update(coin).eq("coin_id", coin["coin_id"]).execute()
-        else:
-            db.table("coins").insert(coin).execute()
-    return coins
-
 
 
 @router.get("/refresh-dashboard")
 def refresh_dashboard():
-    coins = update_coins_in_db()
-    return {"success": True, "message": "Dashboard updated", "count": len(coins)}
+    """Manual override: fetch latest prices and upsert immediately."""
+    try:
+        coins = _fetch_and_format_coins()
+        upsert_coins(coins)
+        return {"success": True, "message": "Dashboard updated", "count": len(coins)}
+    except Exception as exc:
+        logger.exception("Failed to refresh dashboard: %s", exc)
+        raise HTTPException(status_code=500, detail="Failed to refresh dashboard")
+
 
 @router.get("/coins")
-def get_all_coins():
-    response = db.table("coins").select("*").order("rank", desc=False).execute()
-    return response.data
-
-@router.get('/coins/{coin_id}')
-def get_specific_coin(coin_id):
-    res = db.table('coins').select('*').eq('coin_id', coin_id).execute()
-    return res.data[0]
-    
+def get_all_coins_route():
+    return get_all_coins()
 
 
+@router.get("/coins/{coin_id}")
+def get_specific_coin(coin_id: str):
+    coin = get_coin(coin_id)
+    if not coin:
+        raise HTTPException(status_code=404, detail="Coin not found")
+    return coin
