@@ -11,5 +11,4 @@ def get_balance(token):
         res = db.table('wallet').select('*').eq('user_id', user_id).execute()
         return res.data[0]
     else:
-        # return {'message': 'token invalid!'}
         raise HTTPException(status_code=401, detail="token invalid")
