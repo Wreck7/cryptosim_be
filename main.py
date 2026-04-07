@@ -44,7 +44,7 @@ app = FastAPI(title="Crypto Dashboard API", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:8501", "https://cryptosim-frontend.streamlit.app"],
+    allow_origins=["http://localhost:8501", "https://cryptosim-frontend.streamlit.app", "https://id-preview--3cfcc438-d89c-4905-9ab4-cc62e5ca9198.lovable.app"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
