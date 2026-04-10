@@ -3,6 +3,7 @@ from db import db
 
 router = APIRouter()
 
+
 @router.get('/wallet')
 def get_balance(token):
     users = db.table('users').select('id').eq('login_token', token).execute()

@@ -54,7 +54,8 @@ def refresh_dashboard():
         return {"success": True, "message": "Dashboard updated", "count": len(coins)}
     except Exception as exc:
         logger.exception("Failed to refresh dashboard: %s", exc)
-        raise HTTPException(status_code=500, detail="Failed to refresh dashboard")
+        raise HTTPException(
+            status_code=500, detail="Failed to refresh dashboard")
 
 
 @router.get("/coins")

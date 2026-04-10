@@ -24,7 +24,8 @@ def upsert_coins(coins: list[dict]) -> None:
 
 def get_all_coins() -> list[dict]:
     """Return all coins ordered by rank ascending."""
-    response = db.table("coins").select("*").order("rank", desc=False).execute()
+    response = db.table("coins").select(
+        "*").order("rank", desc=False).execute()
     return response.data
 
 
