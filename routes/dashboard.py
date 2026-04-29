@@ -22,11 +22,11 @@ def _fetch_and_format_coins() -> list[dict]:
     response = httpx.get(COIN_TICKERS_URL, timeout=10)
     response.raise_for_status()
     all_coins = response.json()
-    top_20 = sorted(all_coins, key=lambda c: c["rank"])[:20]
+    top_50 = sorted(all_coins, key=lambda c: c["rank"])[:50]
     now = datetime.now(timezone.utc).isoformat()
 
     formatted = []
-    for coin in top_20:
+    for coin in top_50:
         usd = coin["quotes"]["USD"]
         formatted.append({
             "coin_id": coin["id"],
@@ -36,6 +36,10 @@ def _fetch_and_format_coins() -> list[dict]:
             "price": usd["price"],
             "market_cap": usd["market_cap"],
             "volume_24h": usd["volume_24h"],
+            "percent_change_1h": usd.get("percent_change_1h", 0),
+            "percent_change_24h": usd.get("percent_change_24h", 0),
+            "percent_change_7d": usd.get("percent_change_7d", 0),
+            "percent_change_30d": usd.get("percent_change_30d", 0),
             "ath": usd.get("ath_price", 0),
             "percent_from_ath": usd.get("percent_from_price_ath", 0),
             "total_supply": coin.get("total_supply", 0),

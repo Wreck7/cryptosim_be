@@ -1,7 +1,7 @@
 """
 Background coin price streamer.
 Polls Coinpaprika every POLL_INTERVAL seconds and upserts
-the top 20 coins into Supabase via the supabase_service layer.
+the top 50 coins into Supabase via the supabase_service layer.
 """
 
 import asyncio
@@ -25,12 +25,12 @@ def _coin_image_url(coin_id: str) -> str:
 
 
 def _format_coins(raw_coins: list[dict]) -> list[dict]:
-    """Extract and format the top 20 coins from the raw API response."""
-    top_20 = sorted(raw_coins, key=lambda c: c["rank"])[:20]
+    """Extract and format the top 50 coins from the raw API response."""
+    top_50 = sorted(raw_coins, key=lambda c: c["rank"])[:50]
     now = datetime.now(timezone.utc).isoformat()
 
     formatted = []
-    for coin in top_20:
+    for coin in top_50:
         usd = coin["quotes"]["USD"]
         formatted.append({
             "coin_id": coin["id"],
@@ -40,6 +40,10 @@ def _format_coins(raw_coins: list[dict]) -> list[dict]:
             "price": usd["price"],
             "market_cap": usd["market_cap"],
             "volume_24h": usd["volume_24h"],
+            "percent_change_1h": usd.get("percent_change_1h", 0),
+            "percent_change_24h": usd.get("percent_change_24h", 0),
+            "percent_change_7d": usd.get("percent_change_7d", 0),
+            "percent_change_30d": usd.get("percent_change_30d", 0),
             "ath": usd.get("ath_price", 0),
             "percent_from_ath": usd.get("percent_from_price_ath", 0),
             "total_supply": coin.get("total_supply", 0),
